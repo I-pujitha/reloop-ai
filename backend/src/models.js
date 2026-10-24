@@ -1,0 +1,15 @@
+import mongoose from 'mongoose';
+const { Schema, model, models } = mongoose;
+const userSchema = new Schema({ name:{type:String,required:true,trim:true,maxlength:80}, email:{type:String,required:true,unique:true,lowercase:true,trim:true}, passwordHash:{type:String,required:true}, role:{type:String,enum:['user','admin'],default:'user'}, points:{type:Number,default:0,min:0} },{timestamps:true});
+const analysisSchema = new Schema({ user:{type:Schema.Types.ObjectId,ref:'User',required:true,index:true}, originalName:String, itemCategory:{type:String,required:true}, plasticType:String, confidence:{type:Number,min:0,max:1}, observations:[String], recyclability:String, preparationSteps:[String], recommendedAction:String, impact:String, safetyWarning:String, aiModel:String, mode:{type:String,enum:['ollama-live'],default:'ollama-live'} },{timestamps:true});
+const actionSchema = new Schema({ user:{type:Schema.Types.ObjectId,ref:'User',required:true,index:true}, analysis:{type:Schema.Types.ObjectId,ref:'Analysis',required:true}, notes:{type:String,maxlength:500}, status:{type:String,enum:['user-reported','submitted','verified'],default:'user-reported'}, verifiedBy:{type:Schema.Types.ObjectId,ref:'User'}, verifiedAt:Date, pointsAwarded:{type:Number,default:0} },{timestamps:true});
+actionSchema.index({user:1,analysis:1},{unique:true});
+const transactionSchema = new Schema({user:{type:Schema.Types.ObjectId,ref:'User',required:true,index:true},kind:{type:String,enum:['earned','redeemed'],required:true},points:{type:Number,required:true},description:String,action:{type:Schema.Types.ObjectId,ref:'Action'},rewardId:String},{timestamps:true});
+const centreSchema = new Schema({name:String,address:String,city:String,pincode:String,acceptedMaterials:[String],phone:String,source:String,isSample:{type:Boolean,default:false}},{timestamps:true});
+const rewardSchema = new Schema({name:String,description:String,cost:{type:Number,min:1},partner:String,simulated:{type:Boolean,default:true}},{timestamps:true});
+export const User=models.User||model('User',userSchema);
+export const Analysis=models.Analysis||model('Analysis',analysisSchema);
+export const Action=models.Action||model('Action',actionSchema);
+export const PointsTransaction=models.PointsTransaction||model('PointsTransaction',transactionSchema);
+export const RecyclingCentre=models.RecyclingCentre||model('RecyclingCentre',centreSchema);
+export const Reward=models.Reward||model('Reward',rewardSchema);
